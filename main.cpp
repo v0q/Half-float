@@ -3,7 +3,7 @@
 
 int main()
 {
-	half_float::half h = 1.5f;
+  half_float::half h = 1.75f;
 
 	std::cout << h << "\n";
 

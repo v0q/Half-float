@@ -44,15 +44,21 @@ namespace half_float {
 			//
 			//	Exponent part:
 			//		01111100 00000000
-			//	0x	7B				00
+      //	0x	7C				00
 
 			int bitData = floatToBits(_rhs);
-			// Exponent part
-			m_data |= ((bitData & 0x7f800000) >> 16) & 0x7b00;
+      std::bitset<32> x(bitData);
+      std::cout << x << "\n\n";
+      // Exponent part and sign
+      m_data |= ((bitData & 0xff800000) >> 16) & 0xfc00;
 
 			// Mantissa part
-			m_data += ((bitData & 0x007fffff) >> 16) & 0x03ff;
-			std::cout << "0x" << std::setfill('0') << std::hex << std::setw(4) << m_data << "\n";
+      m_data |= ((bitData & 0x007fffff) >> 13) & 0x03ff;
+
+      std::bitset<16> y(((bitData & 0x007fffff) >> 13));
+      std::cout << y << "\n\n";
+
+      std::cout << "Half: 0x" << std::setfill('0') << std::hex << std::setw(4) << m_data << "\n\n";
 		}
 
 		half operator=(const float &_rhs) { return half(_rhs); }
@@ -61,10 +67,17 @@ namespace half_float {
 
 		friend std::ostream& operator<<(std::ostream &_os, const half &_val)
 		{
-			float mantissa = 0.f;
-			float exponent = std::pow(2, (_val.data() >> 8) - 15);
-			std::cout << std::dec << (_val.data() >> 8) << "\n";
+      int mantissa = (_val.data() & 0x03ff);
+
+      float exponent = std::powf(2, ((_val.data() & 0x7c00) >> 10) - 15);
+
+//      float f = ((_val.data()&0x8000)<<16) | (((_val.data()&0x7c00)+0x1C000)<<13) | ((_val.data()&0x03FF)<<13);
+      std::bitset<32> t(((_val.data()&0x8000)<<16) | (((_val.data()&0x7c00)+0x1C000)<<13) | ((_val.data()&0x03FF)<<13));
+      std::cout << t << "\n";
+      std::cout << "Mantissa: " << std::dec << mantissa << "\n";
+
 			_os << (1 + mantissa)*exponent << "\n";
+      return _os;
 		}
 
 	private:
